@@ -65,6 +65,7 @@
   - name: Save ACL replication token
     set_fact:
       consul_acl_replication_token: "{{ consul_acl_replication_token_keygen.stdout }}"
+    when: consul_acl_replication_token_keygen.stdout is defined
 
   when:
     - (consul_acl_replication_token is not defined or consul_acl_replication_token == '')
@@ -74,9 +75,11 @@
 - name: Create ACL policy configuration
   template:
     src: configd_50acl_policy.hcl.j2
-    dest: "{{ consul_configd_path }}/50acl_policy.hcl"
+    dest: "{{ consul_config_path }}/50acl_policy.hcl"
     owner: "{{ consul_user }}"
     group: "{{ consul_group}}"
   notify:
-    - restart consul
-  when: consul_acl_policy | bool
+    - load sample acl policy
+  when:
+    - consul_acl_policy | bool
+    - consul_node_role in ['bootstrap', 'server']

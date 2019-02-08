@@ -1,0 +1,25 @@
+---
+- name: Get list of acl policies
+  shell: "PATH={{ consul_bin_path }}:$PATH consul acl policy list \
+              -token {{ consul_acl_master_token }}"
+  when: ansible_os_family != "Windows"
+  register: consul_acl_policy_list
+  run_once: true
+  delegate_to: "{{ play_hosts | intersect(consul_servers) | first }}"
+  when:
+    - consul_acl_policy | bool
+    - play_hosts | intersect(consul_servers)
+  changed_when: false
+  listen: load sample acl policy
+
+- name: Create sample policy
+  shell: "PATH={{ consul_bin_path }}:$PATH consul acl policy create \
+              -name sample -description 'Sample ACL policy created by Ansible'
+              -rules @{{ consul_config_path }}/50acl_policy.hcl
+              -token {{ consul_acl_master_token }}"
+  run_once: true
+  delegate_to: "{{ play_hosts | intersect(consul_servers) | first }}"
+  when:
+    - consul_acl_policy_list.stdout_lines | default([])
+    - not consul_acl_policy_list.stdout_lines | select('match', '^sample:$') | list
+  listen: load sample acl policy

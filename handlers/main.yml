@@ -26,3 +26,6 @@
 
 - name: start snapshot
   import_tasks: start_snapshot.yml
+
+- name: load sample acl policy
+  import_tasks: load_sample_acl_policy.yml
