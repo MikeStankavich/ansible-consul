@@ -2,11 +2,11 @@
 - name: Get list of acl policies
   shell: "PATH={{ consul_bin_path }}:$PATH consul acl policy list \
               -token {{ consul_acl_master_token }}"
-  when: ansible_os_family != "Windows"
   register: consul_acl_policy_list
   run_once: true
   delegate_to: "{{ play_hosts | intersect(consul_servers) | first }}"
   when:
+    - ansible_os_family != "Windows"
     - consul_acl_policy | bool
     - play_hosts | intersect(consul_servers)
   changed_when: false
